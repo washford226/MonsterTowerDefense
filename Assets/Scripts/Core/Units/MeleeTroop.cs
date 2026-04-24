@@ -1,5 +1,4 @@
 using UnityEngine;
-
 using System.Collections.Generic;
 
 public class MeleeTroop : CombatUnit
@@ -12,7 +11,7 @@ public class MeleeTroop : CombatUnit
     private float regenTimer;
 
     public MeleeTroop(int health, int damage, float attackCooldown, int maxTargets = 1)
-    : base(health, damage, attackCooldown)
+        : base(health, damage, attackCooldown)
     {
         MaxTargets = maxTargets;
     }
@@ -30,6 +29,7 @@ public class MeleeTroop : CombatUnit
     public void AssignTarget(Enemy enemy)
     {
         if (!CanTakeMoreTargets()) return;
+        if (enemy == null || !enemy.IsAlive) return;
         if (targets.Contains(enemy)) return;
 
         targets.Add(enemy);
@@ -56,6 +56,7 @@ public class MeleeTroop : CombatUnit
         }
 
         TryAttack();
+        CleanupDeadTargets(); // 🔥 important safety step
     }
 
     private void TryAttack()
@@ -63,16 +64,39 @@ public class MeleeTroop : CombatUnit
         if (!CanAttack() || targets.Count == 0)
             return;
 
-        // Attack ALL current targets (your design choice)
-        foreach (var enemy in targets)
+        // 🔥 SAFE LOOP (no foreach)
+        for (int i = targets.Count - 1; i >= 0; i--)
         {
-            if (enemy.IsAlive)
+            Enemy enemy = targets[i];
+
+            if (enemy == null || !enemy.IsAlive)
             {
-                enemy.TakeDamage(Damage);
+                targets.RemoveAt(i);
+                continue;
             }
+
+            enemy.TakeDamage(Damage);
         }
 
         ResetAttackTimer();
+    }
+
+    private void CleanupDeadTargets()
+    {
+        for (int i = targets.Count - 1; i >= 0; i--)
+        {
+            var enemy = targets[i];
+
+            if (enemy == null || !enemy.IsAlive)
+            {
+                targets.RemoveAt(i);
+            }
+        }
+
+        if (targets.Count == 0)
+        {
+            IsInCombat = false;
+        }
     }
 
     private void Regen(float deltaTime)

@@ -24,45 +24,28 @@ public class CombatSimulation
     {
         var spawnedEnemy = WaveManager.Tick(deltaTime);
 
+        // Remove dead enemies, BUT don't block them from being processed in the frame they die 
+        // if they need destruction handling. Wait, actually, removing them here means they are never ticked?
+        // No, Enemies is just a list.
+
         if (spawnedEnemy != null)
         {
             Enemies.Add(spawnedEnemy);
         }
 
-        // 1. ENEMY ENGAGEMENT
+        // 🔥 Remove any already dead or destroyed ones
+        Enemies.RemoveAll(e => e == null || !e.IsAlive);
+
         foreach (var enemy in Enemies)
         {
             enemy.TryEngage(Troops);
         }
 
-        // 2. UPDATE ENEMIES (movement/combat state later)
-        foreach (var enemy in Enemies)
-        {
-            // placeholder for movement system later
-        }
-
-        // 3. UPDATE TROOPS
         foreach (var troop in Troops)
         {
             troop.Tick(deltaTime);
         }
 
-        // 4. UPDATE TOWERS
-        foreach (var tower in Towers)
-        {
-            tower.Tick(deltaTime);
-
-            var target = tower.Attack(Enemies);
-
-            if (target != null)
-            {
-                UnityEngine.Debug.Log("Tower fired at enemy!");
-
-                Arrows.Add(new Arrow(target, tower.Damage, travelTime: 0.5f));
-            }
-        }
-
-        // 5. UPDATE ARROWS
         for (int i = Arrows.Count - 1; i >= 0; i--)
         {
             Arrows[i].Tick(deltaTime);
@@ -72,8 +55,5 @@ public class CombatSimulation
                 Arrows.RemoveAt(i);
             }
         }
-
-        // 6. CLEANUP DEAD ENEMIES
-        Enemies.RemoveAll(e => !e.IsAlive);
     }
 }
