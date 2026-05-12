@@ -7,7 +7,7 @@ public class GameController : MonoBehaviour
 
     // Simulation
     public CombatSimulation sim;
-
+    private Dictionary<MeleeTroop, TroopView> troopMap = new();
     // Prefabs
     public GameObject arrowPrefab;
     public GameObject enemyPrefab;
@@ -30,6 +30,7 @@ public class GameController : MonoBehaviour
     // Build system
     private BuildSpot selectedSpot;
     private GameObject selectedBuildingPrefab;
+    public BuildMenuUI buildMenuUI;
 
     void Awake()
     {
@@ -51,6 +52,8 @@ public class GameController : MonoBehaviour
     void Update()
     {
         sim.Tick(Time.deltaTime);
+
+        UpdateEnemyCombatDistances();
 
         HandleWaves();
         UpdateTowers();
@@ -98,6 +101,11 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public void RegisterTroop(MeleeTroop troop, TroopView view)
+    {
+        troopMap[troop] = view;
+    }
+
     // =========================
     // ENEMIES
     // =========================
@@ -128,6 +136,23 @@ public class GameController : MonoBehaviour
             sim.Enemies.Remove(enemy);
     }
 
+    void UpdateEnemyCombatDistances()
+    {
+        foreach (var pair in enemyMap)
+        {
+            Enemy enemy = pair.Key;
+            EnemyView view = pair.Value;
+
+            if (enemy == null || view == null)
+                continue;
+
+            enemy.CheckCombatDistance(
+                troopMap,
+                view.transform.position
+            );
+        }
+    }
+
     // =========================
     // ARROWS
     // =========================
@@ -156,40 +181,35 @@ public class GameController : MonoBehaviour
     // =========================
     // BUILD SYSTEM
     // =========================
-    public void SelectBuildSpot(BuildSpot spot)
+
+    public void BuildAtSpot(BuildSpot spot, GameObject prefab)
     {
-        selectedSpot = spot;
+        GameObject obj = spot.Build(prefab);
 
-        // TEMP default selection
-        selectedBuildingPrefab = archerTowerPrefab;
-
-        BuildSelected();
-    }
-
-    void BuildSelected()
-    {
-        if (selectedSpot == null || selectedBuildingPrefab == null)
+        if (obj == null)
             return;
 
-        GameObject built = selectedSpot.Build(selectedBuildingPrefab);
+        // Archer Tower setup
+        ArcherTowerView towerView = obj.GetComponent<ArcherTowerView>();
 
-        // 🔥 Handle Archer Tower
-        ArcherTowerView towerView = built.GetComponent<ArcherTowerView>();
         if (towerView != null)
         {
             ArcherTower tower = towerView.CreateTower();
+
+            towerView.Init(tower);
+
             RegisterTower(towerView, tower);
         }
 
-        // 🔥 (Future) Handle Unit Hut here
-        UnitHutView hutView = built.GetComponent<UnitHutView>();
+        // Unit Hut setup
+        UnitHutView hutView = obj.GetComponent<UnitHutView>();
+
         if (hutView != null)
         {
-            var hut = new UnitHut(3, 100, 20, 1f);
+            UnitHut hut = hutView.CreateHut();
+
             hutView.Init(hut, sim);
         }
-
-        selectedSpot = null;
     }
 
     // =========================
@@ -219,5 +239,15 @@ public class GameController : MonoBehaviour
     public void UnregisterEnemy(Enemy enemy)
     {
         enemyMap.Remove(enemy);
+    }
+
+    public Dictionary<MeleeTroop, TroopView> GetTroopMap()
+    {
+        return troopMap;
+    }
+
+    public bool TryGetEnemyView(Enemy enemy, out EnemyView view)
+    {
+        return enemyMap.TryGetValue(enemy, out view);
     }
 }

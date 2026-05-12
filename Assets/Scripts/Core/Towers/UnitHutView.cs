@@ -46,6 +46,7 @@ public class UnitHutView : MonoBehaviour
 
         var view = go.GetComponent<TroopView>();
         view.Init(troopData);
+        GameController.Instance.RegisterTroop(troopData, view);
 
         // 🔥 Apply movement speed
         var ai = go.GetComponent<MeleeUnitAI>();

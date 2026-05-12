@@ -11,7 +11,7 @@ public class BuildSpot : MonoBehaviour
         if (currentBuilding != null)
             return;
 
-        GameController.Instance.SelectBuildSpot(this);
+        GameController.Instance.buildMenuUI.Show(this);
     }
 
     // 🔥 Build and RETURN the created object
@@ -35,9 +35,18 @@ public class BuildSpot : MonoBehaviour
             Quaternion.identity
         );
 
+        // 🔥 Hide build spot visuals
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+            sr.enabled = false;
+
+        // 🔥 Disable clicking
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+            col.enabled = false;
+
         return currentBuilding;
     }
-
     // 🔥 Optional (future use: selling/upgrading)
     public void Clear()
     {
@@ -46,8 +55,16 @@ public class BuildSpot : MonoBehaviour
             Destroy(currentBuilding);
             currentBuilding = null;
         }
-    }
 
+        // 🔥 Re-enable visuals
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+            sr.enabled = true;
+
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+            col.enabled = true;
+    }
     public bool IsOccupied()
     {
         return currentBuilding != null;

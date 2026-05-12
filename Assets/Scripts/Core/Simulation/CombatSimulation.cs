@@ -38,7 +38,17 @@ public class CombatSimulation
 
         foreach (var enemy in Enemies)
         {
-            enemy.TryEngage(Troops);
+            if (GameController.Instance == null)
+                continue;
+
+            if (!GameController.Instance.TryGetEnemyView(enemy, out EnemyView enemyView))
+                continue;
+
+            enemy.TryEngage(
+                Troops,
+                GameController.Instance.GetTroopMap(),
+                enemyView.transform.position
+            );
         }
 
         foreach (var troop in Troops)

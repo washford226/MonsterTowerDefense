@@ -25,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1396967036923886331}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.11122, y: -0.08234, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6561f4ecfb50fb440b49dfaf170acfa9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Core::UnitHutView
-  troopPrefab: {fileID: 7677942242821093348, guid: 2901bf75427dada498d6dbdb11271b69, type: 3}
+  troopPrefab: {fileID: 2907601457909165519, guid: 2901bf75427dada498d6dbdb11271b69, type: 3}
   spawnPoints:
   - {fileID: 6570611587042987486}
   - {fileID: 6570611587042987486}
@@ -138,7 +138,7 @@ SpriteRenderer:
   m_SortingLayer: 2
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 038185c425c77c848b2643e438a70a0d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
