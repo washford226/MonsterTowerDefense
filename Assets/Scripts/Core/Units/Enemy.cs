@@ -13,6 +13,8 @@ public class Enemy : CombatUnit
 
     public EnemyState State { get; private set; } = EnemyState.Moving;
 
+    public float EngageRange { get; private set; } = 1.5f;
+
     public MeleeTroop CurrentTargetTroop { get; private set; }
 
     // 🔥 Unity-side death event
@@ -41,14 +43,29 @@ public class Enemy : CombatUnit
         OnDeathEvent?.Invoke(this);
     }
 
-    public void TryEngage(List<MeleeTroop> troops)
+    public void TryEngage(
+    List<MeleeTroop> troops,
+    Dictionary<MeleeTroop, TroopView> troopMap,
+    Vector3 enemyPosition
+)
     {
         if (State != EnemyState.Moving || !IsAlive)
             return;
 
         foreach (var troop in troops)
         {
-            if (troop.CanTakeMoreTargets())
+            if (!troop.CanTakeMoreTargets())
+                continue;
+
+            if (!troopMap.TryGetValue(troop, out TroopView troopView))
+                continue;
+
+            float dist = Vector3.Distance(
+                enemyPosition,
+                troopView.transform.position
+            );
+
+            if (dist <= EngageRange)
             {
                 Engage(troop);
                 return;
@@ -78,5 +95,30 @@ public class Enemy : CombatUnit
     public override void TakeDamage(int amount)
     {
         base.TakeDamage(amount);
+    }
+
+    public void CheckCombatDistance(
+    Dictionary<MeleeTroop, TroopView> troopMap,
+    Vector3 enemyPosition
+)
+    {
+        if (CurrentTargetTroop == null)
+            return;
+
+        if (!troopMap.TryGetValue(CurrentTargetTroop, out TroopView troopView))
+        {
+            Disengage();
+            return;
+        }
+
+        float dist = Vector3.Distance(
+            enemyPosition,
+            troopView.transform.position
+        );
+
+        if (dist > EngageRange + 0.5f)
+        {
+            Disengage();
+        }
     }
 }

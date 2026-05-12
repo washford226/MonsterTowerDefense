@@ -10819,7 +10819,7 @@ ScriptedImporter:
   layerMappingOption: 2
   generatePhysicsShape: 0
   paperDollMode: 0
-  keepDupilcateSpriteName: 1
+  keepDupilcateSpriteName: 0
   generateTileAssets: 0
   tilePaletteCellLayout: 0
   tilePaletteHexagonLayout: 0
