@@ -46,7 +46,7 @@ public class MeleeTroop : CombatUnit
         }
     }
 
-    public void Tick(float deltaTime)
+    public override void Tick(float deltaTime)
     {
         TickAttackTimer(deltaTime);
 

@@ -10,6 +10,7 @@ public class UnitHutView : MonoBehaviour
     public int health = 100;
     public int damage = 20;
     public float attackCooldown = 1f;
+    public int maxTargets = 1;
     public float moveSpeed = 2f;
     public float respawnTime = 5f;
 
@@ -21,7 +22,7 @@ public class UnitHutView : MonoBehaviour
 
     public UnitHut CreateHut()
     {
-        return new UnitHut(troopCount, health, damage, attackCooldown);
+        return new UnitHut(troopCount, health, damage, attackCooldown, maxTargets);
     }
 
     public void Init(UnitHut hut, CombatSimulation sim)

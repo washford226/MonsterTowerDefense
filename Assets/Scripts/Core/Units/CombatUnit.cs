@@ -51,5 +51,7 @@ public abstract class CombatUnit
         attackTimer = AttackCooldown;
     }
 
+    public abstract void Tick(float deltaTime);
+
     public abstract void OnDeath();
 }

@@ -21,6 +21,14 @@ public class EnemyAI : MonoBehaviour
         offset = Random.Range(-pathWidth, pathWidth);
     }
 
+    void Start()
+    {
+        if (view != null)
+        {
+            speed = view.moveSpeed;
+        }
+    }
+
     void Update()
     {
         // 🔥 HARD SAFETY: if script is disabled, do nothing

@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class MeleeUnitAI : MonoBehaviour
 {
+    [HideInInspector]
     public float speed = 2f;
     private Transform targetNode;
 

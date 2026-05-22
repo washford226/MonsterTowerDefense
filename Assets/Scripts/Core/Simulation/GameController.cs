@@ -8,6 +8,8 @@ public class GameController : MonoBehaviour
     // Simulation
     public CombatSimulation sim;
     private Dictionary<MeleeTroop, TroopView> troopMap = new();
+    public Dictionary<MeleeTroop, TroopView> TroopMap => troopMap;
+
     // Prefabs
     public GameObject arrowPrefab;
     public GameObject enemyPrefab;
@@ -37,16 +39,29 @@ public class GameController : MonoBehaviour
         Instance = this;
     }
 
+    public List<Wave> waves = new List<Wave>
+    {
+        new Wave(
+            new List<WaveEnemyGroup> { 
+                new WaveEnemyGroup { count = 20, spawnInterval = 1f, enemyType = "Basic" } 
+            }, 
+            false, 
+            5f
+        ),
+        new Wave(
+            new List<WaveEnemyGroup> { 
+                new WaveEnemyGroup { count = 10, spawnInterval = 0.8f, enemyType = "Basic" },
+                new WaveEnemyGroup { count = 5, spawnInterval = 1.2f, enemyType = "Elite" }
+            }, 
+            true, 
+            5f
+        ) // Boss spawns at end
+    };
+
     void Start()
     {
-        sim = new CombatSimulation();
-
-        waveManager = new WaveManager(new List<Wave>()
-        {
-            new Wave(5, 1f),
-            new Wave(8, 0.8f),
-            new Wave(12, 0.6f)
-        });
+        waveManager = new WaveManager(waves);
+        sim = new CombatSimulation(waveManager);
     }
 
     void Update()
@@ -117,11 +132,13 @@ public class GameController : MonoBehaviour
         ai.path = path;
 
         EnemyView view = obj.GetComponent<EnemyView>();
-        view.Initialize(enemyData);
+        Enemy runtimeEnemy = view.CreateEnemy();
 
-        RegisterEnemy(enemyData, view);
+        view.Initialize(runtimeEnemy);
 
-        sim.Enemies.Add(enemyData);
+        RegisterEnemy(runtimeEnemy, view);
+
+        sim.Enemies.Add(runtimeEnemy);
 
         view.OnDeath += HandleEnemyDeath;
     }
@@ -151,6 +168,16 @@ public class GameController : MonoBehaviour
                 view.transform.position
             );
         }
+    }
+
+    public Vector3 GetEnemyPosition(Enemy enemy)
+    {
+        if (enemyMap.TryGetValue(enemy, out EnemyView view))
+        {
+            return view.transform.position;
+        }
+
+        return Vector3.zero;
     }
 
     // =========================

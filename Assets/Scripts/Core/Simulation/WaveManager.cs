@@ -8,7 +8,14 @@ public class WaveManager
     private int currentWaveIndex = 0;
 
     private float spawnTimer = 0f;
-    private int spawnedEnemies = 0;
+    private float delayTimer = 0f;
+
+    private int currentGroupIndex = 0;
+    private int spawnedEnemiesInGroup = 0;
+    private bool isWaitingForNextWave = false;
+    private bool bossSpawnedForCurrentWave = false;
+
+    // Track active enemies if needed for delay (currently delay just ticks on time)
 
     public bool IsFinished => currentWaveIndex >= waves.Count;
 
@@ -24,30 +31,92 @@ public class WaveManager
 
         var wave = waves[currentWaveIndex];
 
+        if (isWaitingForNextWave)
+        {
+            delayTimer += deltaTime;
+            if (delayTimer >= wave.InterWaveDelay)
+            {
+                delayTimer = 0f;
+                isWaitingForNextWave = false;
+                currentWaveIndex++;
+                ResetWaveState();
+            }
+            return null;
+        }
+
         spawnTimer += deltaTime;
 
-        if (spawnedEnemies < wave.EnemyCount &&
-            spawnTimer >= wave.SpawnInterval)
+        // Still spawning regular groups
+        if (currentGroupIndex < wave.EnemyGroups.Count)
         {
-            spawnTimer = 0f;
-            spawnedEnemies++;
+            var group = wave.EnemyGroups[currentGroupIndex];
 
-            return SpawnEnemyForWave();
+            if (spawnedEnemiesInGroup < group.count && spawnTimer >= group.spawnInterval)
+            {
+                spawnTimer = 0f;
+                spawnedEnemiesInGroup++;
+
+                return SpawnEnemyForWave(group.enemyType);
+            }
+
+            // Group finished
+            if (spawnedEnemiesInGroup >= group.count)
+            {
+                currentGroupIndex++;
+                spawnedEnemiesInGroup = 0;
+            }
+
+            return null;
         }
 
-        if (spawnedEnemies >= wave.EnemyCount)
+        // All groups finished, spawn boss if available
+        if (wave.SpawnBossAtEnd && !bossSpawnedForCurrentWave)
         {
-            currentWaveIndex++;
-            spawnedEnemies = 0;
-            spawnTimer = 0f;
+             bossSpawnedForCurrentWave = true;
+             return SpawnEnemyForWave("Boss");
         }
+
+        // Wave fully spawned, start waiting delay for next wave
+        isWaitingForNextWave = true;
 
         return null;
     }
 
-    private Enemy SpawnEnemyForWave()
+    private void ResetWaveState()
     {
-        // basic placeholder enemy
-        return new Enemy(100);
+        currentGroupIndex = 0;
+        spawnedEnemiesInGroup = 0;
+        spawnTimer = 0f;
+        bossSpawnedForCurrentWave = false;
+    }
+
+    private Enemy SpawnEnemyForWave(string type)
+    {
+        if (type == "Boss")
+        {
+            return new Enemy(
+                500,   // health
+                20,    // damage
+                2f,    // attack cooldown
+                2f     // engage range
+            );
+        }
+        else if (type == "Elite")
+        {
+            return new Enemy(
+                200,
+                10,
+                1.5f,
+                1.75f
+            );
+        }
+
+        // Basic enemy
+        return new Enemy(
+            100,
+            5,
+            1f,
+            1.5f
+        );
     }
 }

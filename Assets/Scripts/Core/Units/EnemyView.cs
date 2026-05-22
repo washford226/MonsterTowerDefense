@@ -3,17 +3,33 @@ using System;
 
 public class EnemyView : MonoBehaviour
 {
+    [Header("Enemy Stats")]
+    public int maxHealth = 50;
+    public int damage = 5;
+    public float attackCooldown = 1f;
+    public float moveSpeed = 2f;
+    public float engageRange = 1.5f;
+
     public Enemy Data { get; private set; }
 
     public event Action<Enemy> OnDeath;
 
     private bool isDead = false;
 
+    public Enemy CreateEnemy()
+    {
+        return new Enemy(
+            maxHealth,
+            damage,
+            attackCooldown,
+            engageRange
+        );
+    }
+
     public void Initialize(Enemy enemy)
     {
         Data = enemy;
 
-        // 🔥 NEW: subscribe to logic death event
         Data.OnDeathEvent += HandleDeath;
     }
 
@@ -24,10 +40,10 @@ public class EnemyView : MonoBehaviour
         Data.TakeDamage(amount);
     }
 
-    // 🔥 Now ONLY called from Enemy logic event
     void HandleDeath(Enemy enemy)
     {
         if (isDead) return;
+
         isDead = true;
 
         OnDeath?.Invoke(Data);
@@ -35,10 +51,12 @@ public class EnemyView : MonoBehaviour
         Data = null;
 
         var ai = GetComponent<EnemyAI>();
+
         if (ai != null)
             ai.enabled = false;
 
         var col = GetComponent<Collider2D>();
+
         if (col != null)
             col.enabled = false;
 

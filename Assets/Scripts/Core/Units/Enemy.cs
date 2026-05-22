@@ -13,21 +13,41 @@ public class Enemy : CombatUnit
 
     public EnemyState State { get; private set; } = EnemyState.Moving;
 
-    public float EngageRange { get; private set; } = 1.5f;
+    public float EngageRange { get; private set; }
 
     public MeleeTroop CurrentTargetTroop { get; private set; }
 
     // 🔥 Unity-side death event
     public event Action<Enemy> OnDeathEvent;
 
-    public Enemy(int health, int damage = 5, float attackCooldown = 1f)
-        : base(health, damage, attackCooldown)
+    public Enemy(
+    int health,
+    int damage,
+    float attackCooldown,
+    float engageRange
+)
+    : base(health, damage, attackCooldown)
     {
+        EngageRange = engageRange;
     }
 
     public float PathProgress { get; set; }
 
     // ✅ REQUIRED BY CombatUnit (fixes your error)
+    public override void Tick(float deltaTime)
+    {
+        TickAttackTimer(deltaTime);
+
+        if (State == EnemyState.InCombat && CurrentTargetTroop != null)
+        {
+            if (CanAttack() && CurrentTargetTroop.IsAlive)
+            {
+                CurrentTargetTroop.TakeDamage(Damage);
+                ResetAttackTimer();
+            }
+        }
+    }
+
     public override void OnDeath()
     {
         // Logic-layer cleanup only (NO Unity calls here)
